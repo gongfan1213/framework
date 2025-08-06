@@ -1,5 +1,9 @@
 # 忽略所有文件和文件夹
-*
+langgpraph/
+langchain/
+eino/
+crewAI
+
 
 # 不忽略docs文件夹及其内容
 !docs/
