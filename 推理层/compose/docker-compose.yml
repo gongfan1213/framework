@@ -1,0 +1,45 @@
+version: "3.9"
+services:
+  vllm:
+    image: vllm/vllm-openai:latest
+    command: [
+      "--model", "Qwen/Qwen2-7B-Instruct",
+      "--tensor-parallel-size", "1",
+      "--max-model-len", "32768",
+      "--gpu-memory-utilization", "0.90",
+      "--served-model-name", "qwen2-7b"
+    ]
+    environment:
+      - VLLM_WORKER_CONCURRENCY=1
+    ports:
+      - "8000:8000"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+
+  gateway:
+    build: ./gateway
+    environment:
+      - BACKEND_BASE=http://vllm:8000/v1
+      - API_KEYS=test-key
+    ports:
+      - "9000:9000"
+    depends_on:
+      - vllm
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command: ["--config.file=/etc/prometheus/prometheus.yml"]
+    ports:
+      - "9090:9090"
+    depends_on:
+      - gateway
+
+networks:
+  default:
+    name: llm-infer-net
+

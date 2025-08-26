@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-infer
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: llm-infer
+  template:
+    metadata:
+      labels:
+        app: llm-infer
+    spec:
+      containers:
+      - name: server
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+        - name: MODEL_NAME
+          value: "{{ .Values.env.MODEL_NAME }}"
+        ports:
+        - containerPort: {{ .Values.service.port }}
+        resources:
+          limits:
+            nvidia.com/gpu: {{ .Values.resources.limits."nvidia.com/gpu" }}
+          requests:
+            cpu: {{ .Values.resources.requests.cpu }}
+            memory: {{ .Values.resources.requests.memory }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-infer
+spec:
+  selector:
+    app: llm-infer
+  ports:
+  - port: {{ .Values.service.port }}
+    targetPort: {{ .Values.service.port }}
+    protocol: TCP
+  type: {{ .Values.service.type }}
+
+
