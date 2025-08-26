@@ -2,7 +2,7 @@
 langgpraph/
 langchain/
 eino/
-crewAI
+crewAI/
 
 
 # 不忽略docs文件夹及其内容
